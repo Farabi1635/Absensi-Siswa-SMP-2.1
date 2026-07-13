@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Absensi SMP Mangun Jaya 01</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="logo_sekolah1.jpg.png" type="image/png">
+    <link rel="stylesheet" href="style.css">
+
+    <script>
+        (function() {
+            const t = localStorage.getItem('ab_theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (t === 'dark' || (!t && prefersDark)) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+        })();
+    </script>
+</head>
+
+<body>
+
+    <!-- ===== HEADER ===== -->
+    <header class="app-header">
+        <div class="header-inner">
+            <div class="header-brand">
+                <div class="brand-logo">
+                    <img src="logo_sekolah1.jpg.png" alt="Logo SMP Mangun Jaya 01">
+                </div>
+                <div class="brand-text">
+                    <span class="brand-title">Absensi Siswa</span>
+                    <span class="brand-sub">SMP Mangun Jaya 01</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="header-date" id="headerDate"></div>
+                <button class="dark-toggle" id="darkToggle" aria-label="Toggle dark mode" title="Ganti tema">
+                    <i class="fas fa-moon" id="darkIcon"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ===== BOTTOM NAV ===== -->
+    <nav class="bottom-nav">
+        <button class="nav-btn active" data-section="dashboard">
+            <i class="fas fa-home"></i>
+            <span>Beranda</span>
+        </button>
+        <button class="nav-btn" data-section="absensi">
+            <i class="fas fa-clipboard-check"></i>
+            <span>Absensi</span>
+        </button>
+        <button class="nav-btn" data-section="rekap">
+            <i class="fas fa-list-alt"></i>
+            <span>Rekap</span>
+        </button>
+        <button class="nav-btn" data-section="siswa">
+            <i class="fas fa-users"></i>
+            <span>Siswa</span>
+        </button>
+        <button class="nav-btn" data-section="pengaturan">
+            <i class="fas fa-cog"></i>
+            <span>Lainnya</span>
+        </button>
+    </nav>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="app-main">
+
+        <!-- ========== DASHBOARD ========== -->
+        <section id="dashboard" class="page active-page">
+            <div class="page-scroll">
+
+                <!-- Welcome Banner -->
+                <div class="welcome-banner">
+                    <div class="welcome-text">
+                        <p class="welcome-greeting">Selamat Datang! 👋</p>
+                        <h2 class="welcome-title">Dashboard Absensi</h2>
+                        <p class="welcome-sub" id="currentSemesterBadge">-</p>
+                    </div>
+                    <div class="welcome-icon">
+                        <img src="logo_sekolah1.jpg.png" alt="Logo">
+                    </div>
+                </div>
+
+                <!-- Stats Hari Ini -->
+                <div class="section-label">Statistik Hari Ini</div>
+                <div class="stats-grid">
+                    <div class="stat-pill hadir">
+                        <div class="stat-pill-icon"><i class="fas fa-user-check"></i></div>
+                        <div class="stat-pill-info">
+                            <span class="stat-pill-num" id="statHadir">0</span>
+                            <span class="stat-pill-label">Hadir</span>
+                        </div>
+                    </div>
+                    <div class="stat-pill sakit">
+                        <div class="stat-pill-icon"><i class="fas fa-hospital"></i></div>
+                        <div class="stat-pill-info">
+                            <span class="stat-pill-num" id="statSakit">0</span>
+                            <span class="stat-pill-label">Sakit</span>
+                        </div>
+                    </div>
+                    <div class="stat-pill izin">
+                        <div class="stat-pill-icon"><i class="fas fa-user-tag"></i></div>
+                        <div class="stat-pill-info">
+                            <span class="stat-pill-num" id="statIzin">0</span>
+                            <span class="stat-pill-label">Izin</span>
+                        </div>
+                    </div>
+                    <div class="stat-pill alpa">
+                        <div class="stat-pill-icon"><i class="fas fa-user-times"></i></div>
+                        <div class="stat-pill-info">
+                            <span class="stat-pill-num" id="statAlpa">0</span>
+                            <span class="stat-pill-label">Alpa</span>
+                        </div>
+                    </div>
+                    <div class="stat-pill skorsing">
+                        <div class="stat-pill-icon"><i class="fas fa-ban"></i></div>
+                        <div class="stat-pill-info">
+                            <span class="stat-pill-num" id="statSkorsing">0</span>
+                            <span class="stat-pill-label">Skorsing</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart -->
+                <div class="section-label">Grafik Kehadiran</div>
+                <div class="card chart-card">
+                    <canvas id="absensiChart"></canvas>
+                    <div id="chartEmpty" class="chart-empty">
+                        <i class="fas fa-chart-pie"></i>
+                        <p>Belum ada data absensi</p>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="section-label">Aksi Cepat</div>
+                <div class="quick-actions">
+                    <button class="quick-btn" onclick="switchPage('absensi')">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Input Absensi</span>
+                    </button>
+                    <button class="quick-btn" onclick="switchPage('siswa')">
+                        <i class="fas fa-user-plus"></i>
+                        <span>Kelola Siswa</span>
+                    </button>
+                    <button class="quick-btn" onclick="switchPage('pengaturan')">
+                        <i class="fas fa-download"></i>
+                        <span>Export Data</span>
+                    </button>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ========== ABSENSI ========== -->
+        <section id="absensi" class="page">
+            <div class="page-scroll">
+                <div class="page-title-bar">
+                    <h2>Input Absensi</h2>
+                </div>
+
+                <div class="card">
+                    <div class="form-group">
+                        <label class="form-label"><i class="fas fa-calendar-day"></i> Tanggal</label>
+                        <input type="date" id="tanggal" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label"><i class="fas fa-chalkboard"></i> Kelas</label>
+                        <select id="kelas" class="form-control" onchange="updateSiswaList()">
+                            <option value="" disabled selected>Pilih Kelas...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label"><i class="fas fa-user"></i> Nama Siswa</label>
+                        <div class="input-with-icon">
+                            <input type="text" id="namaSiswa" class="form-control" placeholder="Ketik atau pilih nama siswa..." autocomplete="off" list="namaSiswaList">
+                            <i class="fas fa-search input-icon"></i>
+                        </div>
+                        <datalist id="namaSiswaList"></datalist>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label"><i class="fas fa-clipboard-list"></i> Status Kehadiran</label>
+                        <div class="status-grid">
+                            <label class="status-chip hadir-chip">
+                                <input type="radio" name="status" value="Hadir" checked>
+                                <i class="fas fa-user-check"></i>
+                                <span>Hadir</span>
+                            </label>
+                            <label class="status-chip sakit-chip">
+                                <input type="radio" name="status" value="Sakit">
+                                <i class="fas fa-hospital"></i>
+                                <span>Sakit</span>
+                            </label>
+                            <label class="status-chip izin-chip">
+                                <input type="radio" name="status" value="Izin">
+                                <i class="fas fa-user-tag"></i>
+                                <span>Izin</span>
+                            </label>
+                            <label class="status-chip alpa-chip">
+                                <input type="radio" name="status" value="Alpa">
+                                <i class="fas fa-user-times"></i>
+                                <span>Alpa</span>
+                            </label>
+                            <label class="status-chip skorsing-chip">
+                                <input type="radio" name="status" value="Skorsing">
+                                <i class="fas fa-ban"></i>
+                                <span>Skorsing</span>
+                            </label>
+                        </div>
+                    </div>
+                    <button id="btnSimpanAbsensi" class="btn btn-primary btn-full">
+                        <i class="fas fa-save"></i> Simpan Absensi
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== REKAP ========== -->
+        <section id="rekap" class="page">
+            <div class="page-scroll">
+                <div class="page-title-bar">
+                    <h2>Rekap Absensi</h2>
+                    <span class="total-badge" id="totalDataBadge">0 data</span>
+                </div>
+
+                <!-- Filter -->
+                <div class="card filter-card">
+                    <div class="filter-title" onclick="toggleFilter()">
+                        <span><i class="fas fa-filter"></i> Filter Data</span>
+                        <i class="fas fa-chevron-down" id="filterChevron"></i>
+                    </div>
+                    <div id="filterBody" class="filter-body">
+                        <div class="form-row">
+                            <div class="form-group half">
+                                <label class="form-label">Kelas</label>
+                                <select id="filterKelas" class="form-control">
+                                    <option value="all">Semua Kelas</option>
+                                </select>
+                            </div>
+                            <div class="form-group half">
+                                <label class="form-label">Status</label>
+                                <select id="filterStatus" class="form-control">
+                                    <option value="all">Semua Status</option>
+                                    <option value="Hadir">Hadir</option>
+                                    <option value="Sakit">Sakit</option>
+                                    <option value="Izin">Izin</option>
+                                    <option value="Alpa">Alpa</option>
+                                    <option value="Skorsing">Skorsing</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group half">
+                                <label class="form-label">Dari Tanggal</label>
+                                <input type="date" id="filterTanggalMulai" class="form-control">
+                            </div>
+                            <div class="form-group half">
+                                <label class="form-label">Sampai</label>
+                                <input type="date" id="filterTanggalSampai" class="form-control">
+                            </div>
+                        </div>
+                        <button id="resetFilter" class="btn btn-outline btn-full">
+                            <i class="fas fa-undo"></i> Reset Filter
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Data List -->
+                <div id="rekapList" class="rekap-list"></div>
+
+                <!-- Pagination -->
+                <div class="pagination-bar">
+                    <button id="prevPage" class="btn-page" disabled><i class="fas fa-chevron-left"></i></button>
+                    <div id="pageNumbers" class="page-numbers"></div>
+                    <button id="nextPage" class="btn-page" disabled><i class="fas fa-chevron-right"></i></button>
+                </div>
+                <div class="pagination-info">
+                    <span id="paginationInfo">Menampilkan 0 dari 0 data</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== SISWA ========== -->
+        <section id="siswa" class="page">
+            <div class="page-scroll">
+                <div class="page-title-bar">
+                    <h2>Kelola Siswa</h2>
+                </div>
+
+                <!-- Semester aktif -->
+                <div class="card semester-card">
+                    <div class="semester-header">
+                        <i class="fas fa-calendar-alt"></i>
+                        <div>
+                            <p class="semester-label">Semester Aktif</p>
+                            <p class="semester-value" id="semesterValue">Belum diatur</p>
+                        </div>
+                    </div>
+                    <button class="btn btn-outline btn-sm" onclick="openSemesterModal()">
+                        <i class="fas fa-edit"></i> Ubah
+                    </button>
+                </div>
+
+                <!-- Tambah siswa baru -->
+                <div class="card">
+                    <h3 class="card-title"><i class="fas fa-user-plus"></i> Tambah Siswa Baru</h3>
+                    <div class="form-group">
+                        <label class="form-label">Pilih Kelas</label>
+                        <select id="addSiswaKelas" class="form-control">
+                            <option value="" disabled selected>Pilih kelas...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Nama Siswa</label>
+                        <input type="text" id="addSiswaName" class="form-control" placeholder="Masukkan nama lengkap...">
+                    </div>
+                    <button id="btnTambahSiswa" class="btn btn-primary btn-full">
+                        <i class="fas fa-plus"></i> Tambah Siswa
+                    </button>
+                </div>
+
+                <!-- Daftar siswa per kelas -->
+                <div id="daftarSiswaContainer"></div>
+
+                <!-- Import massal -->
+                <div class="card">
+                    <h3 class="card-title"><i class="fas fa-file-import"></i> Import Daftar Kelas</h3>
+                    <p class="card-desc">Ganti seluruh daftar siswa satu kelas sekaligus. Format: satu nama per baris.</p>
+                    <div class="form-group">
+                        <label class="form-label">Kelas Target</label>
+                        <select id="importKelas" class="form-control">
+                            <option value="" disabled selected>Pilih kelas...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Daftar Nama Siswa</label>
+                        <textarea id="importNama" class="form-control textarea" rows="8" placeholder="Contoh:&#10;Ahmad Fauzi&#10;Budi Santoso&#10;Citra Dewi&#10;..."></textarea>
+                    </div>
+                    <div class="warning-box">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>Daftar siswa kelas ini akan <strong>diganti seluruhnya</strong>. Data absensi lama tidak terpengaruh.</p>
+                    </div>
+                    <button id="btnImportSiswa" class="btn btn-warning btn-full">
+                        <i class="fas fa-file-import"></i> Ganti Daftar Kelas Ini
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== PENGATURAN / LAINNYA ========== -->
+        <section id="pengaturan" class="page">
+            <div class="page-scroll">
+                <div class="page-title-bar">
+                    <h2>Lainnya</h2>
+                </div>
+
+                <!-- Tema -->
+                <div class="section-label">Tampilan</div>
+                <div class="card">
+                    <div class="export-item">
+                        <div class="export-info">
+                            <i class="fas fa-moon" id="themeIconSettings" style="color:var(--blue-primary)"></i>
+                            <div>
+                                <p class="export-title" id="themeLabel">Mode Gelap</p>
+                                <p class="export-desc" id="themeDesc">Aktifkan tampilan gelap</p>
+                            </div>
+                        </div>
+                        <button class="toggle-switch" id="themeToggleBtn" onclick="toggleDarkFromSettings()">
+                            <span class="toggle-thumb"></span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Export -->
+                <div class="section-label">Export Data</div>
+                <div class="card">
+                    <div class="export-item">
+                        <div class="export-info">
+                            <i class="fas fa-file-excel" style="color:#22c55e"></i>
+                            <div>
+                                <p class="export-title">Excel Harian</p>
+                                <p class="export-desc">Berdasarkan filter aktif</p>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-success" onclick="exportData('harian','excel')">Export</button>
+                    </div>
+                    <div class="divider"></div>
+                    <div class="export-item">
+                        <div class="export-info">
+                            <i class="fas fa-file-pdf" style="color:#ef4444"></i>
+                            <div>
+                                <p class="export-title">PDF Harian</p>
+                                <p class="export-desc">Berdasarkan filter aktif</p>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-danger" onclick="exportData('harian','pdf')">Export</button>
+                    </div>
+                    <div class="divider"></div>
+                    <div class="export-item">
+                        <div class="export-info">
+                            <i class="fas fa-file-excel" style="color:#22c55e"></i>
+                            <div>
+                                <p class="export-title">Excel Rekap Total</p>
+                                <p class="export-desc">Ringkasan semua data</p>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-success" onclick="exportData('total','excel')">Export</button>
+                    </div>
+                    <div class="divider"></div>
+                    <div class="export-item">
+                        <div class="export-info">
+                            <i class="fas fa-file-pdf" style="color:#ef4444"></i>
+                            <div>
+                                <p class="export-title">PDF Rekap Total</p>
+                                <p class="export-desc">Ringkasan semua data</p>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-danger" onclick="exportData('total','pdf')">Export</button>
+                    </div>
+                </div>
+
+                <!-- Backup & Restore -->
+                <div class="section-label">Backup &amp; Restore</div>
+                <div class="card">
+                    <div class="export-item">
+                        <div class="export-info">
+                            <i class="fas fa-cloud-download-alt" style="color:#3b82f6"></i>
+                            <div>
+                                <p class="export-title">Backup Data</p>
+                                <p class="export-desc">Simpan semua data ke file JSON</p>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-primary" onclick="backupData()">Backup</button>
+                    </div>
+                    <div class="divider"></div>
+                    <div class="export-item">
+                        <div class="export-info">
+                            <i class="fas fa-cloud-upload-alt" style="color:#f59e0b"></i>
+                            <div>
+                                <p class="export-title">Restore Data</p>
+                                <p class="export-desc">Pulihkan data dari file backup</p>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-warning" onclick="document.getElementById('restoreFile').click()">Restore</button>
+                        <input type="file" id="restoreFile" accept=".json" style="display:none" onchange="restoreData(this)">
+                    </div>
+                </div>
+
+                <!-- Kelola Kelas -->
+                <div class="section-label">Kelola Kelas</div>
+                <div class="card">
+                    <div class="form-group">
+                        <label class="form-label">Nama Kelas Baru</label>
+                        <input type="text" id="newKelasName" class="form-control" placeholder="Contoh: VII A, VIII B, IX C...">
+                    </div>
+                    <button class="btn btn-primary btn-full" onclick="tambahKelas()">
+                        <i class="fas fa-plus"></i> Tambah Kelas
+                    </button>
+                    <div class="divider"></div>
+                    <p class="form-label">Daftar Kelas:</p>
+                    <div id="daftarKelas" class="kelas-chip-list"></div>
+                </div>
+
+                <!-- Zona Berbahaya -->
+                <div class="section-label danger-label">Zona Berbahaya</div>
+                <div class="card danger-card">
+                    <div class="export-item">
+                        <div class="export-info">
+                            <i class="fas fa-trash-alt" style="color:#ef4444"></i>
+                            <div>
+                                <p class="export-title">Hapus Semua Absensi</p>
+                                <p class="export-desc">Data absensi dihapus permanen</p>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-danger" onclick="confirmHapusSemua()">Hapus</button>
+                    </div>
+                    <div class="divider"></div>
+                    <div class="export-item">
+                        <div class="export-info">
+                            <i class="fas fa-users-slash" style="color:#ef4444"></i>
+                            <div>
+                                <p class="export-title">Reset Semua Data Siswa</p>
+                                <p class="export-desc">Kosongkan daftar siswa semua kelas</p>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-danger" onclick="confirmResetSiswa()">Reset</button>
+                    </div>
+                </div>
+
+                <div class="footer-info">
+                    <div class="footer-logo-wrap">
+                        <img src="logo_sekolah1.jpg.png" alt="Logo SMP Mangun Jaya 01" class="footer-logo" onerror="this.style.display='none';document.getElementById('footerLogoFallback').style.display='flex'">
+                        <div id="footerLogoFallback" class="footer-logo-fallback" style="display:none">
+                            <i class="fas fa-school"></i>
+                        </div>
+                    </div>
+                    <p>&copy; <span id="currentYear"></span> SMP Mangun Jaya 01 </p>
+                    <p class="version-text">Tambun Selatan</p>
+                    <p class="version-text">Versi 2.1.0</p>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ===== MODALS ===== -->
+
+    <!-- Modal Edit Absensi -->
+    <div id="editModal" class="modal-overlay" style="display:none">
+        <div class="modal-sheet">
+            <div class="modal-handle"></div>
+            <div class="modal-header">
+                <h3><i class="fas fa-edit"></i> Edit Absensi</h3>
+                <button class="modal-close" onclick="closeModal('editModal')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Tanggal</label>
+                    <input type="date" id="editTanggal" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Nama Siswa</label>
+                    <input type="text" id="editNamaSiswa" class="form-control" placeholder="Nama siswa...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Kelas</label>
+                    <select id="editKelas" class="form-control"></select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <div class="status-grid">
+                        <label class="status-chip hadir-chip">
+                            <input type="radio" name="editStatus" value="Hadir">
+                            <i class="fas fa-user-check"></i><span>Hadir</span>
+                        </label>
+                        <label class="status-chip sakit-chip">
+                            <input type="radio" name="editStatus" value="Sakit">
+                            <i class="fas fa-hospital"></i><span>Sakit</span>
+                        </label>
+                        <label class="status-chip izin-chip">
+                            <input type="radio" name="editStatus" value="Izin">
+                            <i class="fas fa-user-tag"></i><span>Izin</span>
+                        </label>
+                        <label class="status-chip alpa-chip">
+                            <input type="radio" name="editStatus" value="Alpa">
+                            <i class="fas fa-user-times"></i><span>Alpa</span>
+                        </label>
+                        <label class="status-chip skorsing-chip">
+                            <input type="radio" name="editStatus" value="Skorsing">
+                            <i class="fas fa-ban"></i><span>Skorsing</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('editModal')">Batal</button>
+                <button class="btn btn-primary" id="saveEditBtn">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Hapus Absensi -->
+    <div id="deleteModal" class="modal-overlay" style="display:none">
+        <div class="modal-sheet modal-sheet-sm">
+            <div class="modal-handle"></div>
+            <div class="modal-header">
+                <h3><i class="fas fa-trash-alt" style="color:#ef4444"></i> Hapus Data</h3>
+            </div>
+            <div class="modal-body">
+                <p class="modal-confirm-text">Yakin ingin menghapus data absensi ini? Tindakan tidak dapat dibatalkan.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('deleteModal')">Batal</button>
+                <button class="btn btn-danger" id="confirmDeleteBtn">Hapus</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Edit Siswa -->
+    <div id="editSiswaModal" class="modal-overlay" style="display:none">
+        <div class="modal-sheet modal-sheet-sm">
+            <div class="modal-handle"></div>
+            <div class="modal-header">
+                <h3><i class="fas fa-user-edit"></i> Edit Nama Siswa</h3>
+                <button class="modal-close" onclick="closeModal('editSiswaModal')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Nama Baru</label>
+                    <input type="text" id="editSiswaName" class="form-control">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('editSiswaModal')">Batal</button>
+                <button class="btn btn-primary" id="saveEditSiswaBtn">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Semester -->
+    <div id="semesterModal" class="modal-overlay" style="display:none">
+        <div class="modal-sheet modal-sheet-sm">
+            <div class="modal-handle"></div>
+            <div class="modal-header">
+                <h3><i class="fas fa-calendar-alt"></i> Atur Semester</h3>
+                <button class="modal-close" onclick="closeModal('semesterModal')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Nama Semester</label>
+                    <input type="text" id="semesterInput" class="form-control" placeholder="Contoh: Semester 1 - 2025/2026">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('semesterModal')">Batal</button>
+                <button class="btn btn-primary" onclick="saveSemester()">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Hapus Siswa -->
+    <div id="deleteSiswaModal" class="modal-overlay" style="display:none">
+        <div class="modal-sheet modal-sheet-sm">
+            <div class="modal-handle"></div>
+            <div class="modal-header">
+                <h3><i class="fas fa-user-minus" style="color:#ef4444"></i> Hapus Siswa</h3>
+            </div>
+            <div class="modal-body">
+                <p class="modal-confirm-text">Yakin hapus siswa <strong id="deleteSiswaName"></strong> dari daftar? Data absensinya tetap tersimpan.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('deleteSiswaModal')">Batal</button>
+                <button class="btn btn-danger" id="confirmDeleteSiswaBtn">Hapus</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <i id="toastIcon" class="fas fa-check-circle"></i>
+        <span id="toastMsg"></span>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
